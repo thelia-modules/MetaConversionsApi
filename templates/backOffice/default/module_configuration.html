@@ -1,0 +1,51 @@
+<style>
+    input[type=number]
+    {
+        min-width:100px;
+    }
+</style>
+
+{block name="main-content"}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="general-block-decorator">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tab-content">
+                            <div class="title">
+                                {intl l="Meta Conversions Api configuration" d='metaconversionsapi.bo.default'}
+                            </div>
+
+                            {form name="metaconversionsapi_form_configuration_form"}
+                                <form method="POST" action="{url path="/admin/module/MetaConversionsApi/configuration"}" {form_enctype} >
+                                    {render_form_field field="success_url" value={url path='/admin/module/MetaConversionsApi'}}
+                                    {render_form_field field="error_url" value={url path='/admin/module/MetaConversionsApi'}}
+
+                                    {form_hidden_fields }
+
+                                    {if $form_error}
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="alert alert-danger">{$form_error_message}</div>
+                                            </div>
+                                        </div>
+                                    {/if}
+
+                                    <div class="col-md-12">
+                                        {render_form_field field='tracker_pixel_id'}
+                                        {render_form_field field='tracker_token'}
+                                        {render_form_field field='tracker_active'}
+
+                                        {render_form_field field='tracker_test_event_code'}
+                                        {render_form_field field='tracker_test_mode'}
+                                    </div>
+                                    <button type="submit" class="btn btn-success" >{intl l="Save Configuration" d="metaconversionsapi.bo.default"}</button>
+                                </form>
+                            {/form}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{/block}
