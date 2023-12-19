@@ -3,7 +3,6 @@
 namespace MetaConversionsApi;
 
 use Propel\Runtime\Connection\ConnectionInterface;
-use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\Finder\Finder;
 use Thelia\Install\Database;
 use Thelia\Module\BaseModule;
@@ -25,19 +24,6 @@ class MetaConversionsApi extends BaseModule
      *
      * Have fun !
      */
-
-    /**
-     * Defines how services are loaded in your modules
-     *
-     * @param ServicesConfigurator $servicesConfigurator
-     */
-    public static function configureServices(ServicesConfigurator $servicesConfigurator): void
-    {
-        $servicesConfigurator->load(self::getModuleCode().'\\', __DIR__)
-            ->exclude([THELIA_MODULE_DIR . ucfirst(self::getModuleCode()). "/I18n/*"])
-            ->autowire(true)
-            ->autoconfigure(true);
-    }
 
     /**
      * Execute sql files in Config/update/ folder named with module version (ex: 1.0.1.sql).

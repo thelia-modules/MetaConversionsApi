@@ -11,6 +11,7 @@ use FacebookAds\Object\ServerSide\UserData as MetaUserData;
 use MetaConversionsApi\MetaConversionsApi;
 use MetaConversionsApi\Service\MetaOrderService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\Event\Order\OrderEvent;
 use Thelia\Core\Event\TheliaEvents;
@@ -18,10 +19,15 @@ use Thelia\Log\Tlog;
 
 class MetaListener implements EventSubscriberInterface
 {
-    public function __construct(
-        protected RequestStack $requestStack,
-        protected MetaOrderService $service
-    ) {}
+
+    /** @var Request */
+    private $request;
+    private $service;
+
+    public function __construct(Request $request, MetaOrderService $service) {
+        $this->request = $request;
+        $this->service = $service;
+    }
 
     public static function getSubscribedEvents(): array
     {
@@ -63,7 +69,7 @@ class MetaListener implements EventSubscriberInterface
             $event = (new MetaEvent())
                 ->setEventName($eventName)
                 ->setEventTime(time())
-                ->setEventSourceUrl($this->requestStack->getCurrentRequest()->getRequestUri())
+                ->setEventSourceUrl($this->request->getRequestUri())
                 ->setUserData($userData)
                 ->setActionSource(MetaActionSource::WEBSITE)
             ;
