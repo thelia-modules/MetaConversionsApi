@@ -3,22 +3,17 @@
 namespace MetaConversionsApi\Controller;
 
 use Exception;
-use MetaConversionsApi\Form\ConfigurationForm;
 use MetaConversionsApi\MetaConversionsApi;
-use Response;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Response;
 use Thelia\Controller\Admin\AdminController;
 use Thelia\Core\Template\ParserContext;
 use Thelia\Form\Exception\FormValidationException;
 
-#[Route('/admin/module/MetaConversionsApi', name: 'meta_conversions_api_config')]
 class ConfigurationController extends AdminController
 {
-    #[Route('/configuration', name: 'configuration')]
-    public function saveConfiguration(ParserContext $parserContext) : RedirectResponse|Response
+    public function saveConfiguration(): ?Response
     {
-        $form = $this->createForm(ConfigurationForm::getName());
+        $form = $this->createForm("metaconversionsapi_form_configuration_form");
         try {
             $data = $this->validateForm($form)->getData();
 
@@ -38,7 +33,7 @@ class ConfigurationController extends AdminController
 
         $form->setErrorMessage($error_message);
 
-        $parserContext
+        $this->getParserContext()
             ->addForm($form)
             ->setGeneralError($error_message);
 

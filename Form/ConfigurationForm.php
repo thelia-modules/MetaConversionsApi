@@ -58,4 +58,9 @@ class ConfigurationForm extends BaseForm
                 ]
             );
     }
+
+    public function getName(): string
+    {
+        return "metaconversionsapi_form_configuration_form";
+    }
 }
