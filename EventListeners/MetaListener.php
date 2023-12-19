@@ -15,6 +15,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\Event\Order\OrderEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Log\Tlog;
+use Thelia\Model\Customer;
+use Thelia\Model\Order;
 
 class MetaListener implements EventSubscriberInterface
 {
@@ -32,10 +34,10 @@ class MetaListener implements EventSubscriberInterface
 
     public function onOrderCreation(OrderEvent $event): void
     {
-        $this->sendData('Purchase', $event->getPlacedOrder());
+        $this->sendData('Purchase',  $event->getPlacedOrder()->getCustomer(), $event->getPlacedOrder());
     }
 
-    protected function sendData($eventName, $data = null): void
+    protected function sendData($eventName, ?Customer $customer = null, $data = null): void
     {
         $accessToken = MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_TOKEN);
         $pixelId = MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_PIXEL_ID);
@@ -56,8 +58,8 @@ class MetaListener implements EventSubscriberInterface
                 ->setClientUserAgent($_SERVER['HTTP_USER_AGENT'])
             ;
 
-            if ($data !== null) {
-                $userData = $this->service->getCustomerInfo($userData, $data);
+            if ($customer !== null) {
+                $userData = $this->service->getCustomerInfo($userData, $customer->getId());
             }
 
             $event = (new MetaEvent())

@@ -16,7 +16,7 @@ class MetaOrderService
 {
     public function getCustomerInfo(MetaUserData $userData, $customerId): MetaUserData
     {
-        if (null !== $customer = CustomerQuery::create()->findOneById($customerId)) {
+        if (null !== $customer = CustomerQuery::create()->findPk($customerId)) {
             $customerAddress = $customer->getDefaultAddress();
 
             $userData
@@ -56,6 +56,9 @@ class MetaOrderService
     {
         $content = (new MetaContent())
             ->setProductId($orderProduct->getProductRef())
+            ->setTitle($orderProduct->getTitle())
+            ->setDescription($orderProduct->getDescription())
+            ->setItemPrice($orderProduct->getPrice())
             ->setQuantity($orderProduct->getQuantity())
         ;
 
