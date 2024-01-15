@@ -34,16 +34,19 @@ class MetaListener implements EventSubscriberInterface
 
     public function onOrderCreation(OrderEvent $event): void
     {
-        $this->sendData('Purchase',  $event->getPlacedOrder()->getCustomer(), $event->getPlacedOrder());
+        $this->sendData('Purchase',  $event->getPlacedOrder()->getRef(), $event->getPlacedOrder()->getCustomer(), $event->getPlacedOrder());
     }
 
-    protected function sendData($eventName, ?Customer $customer = null, $data = null): void
+    protected function sendData($eventName, $eventId, ?Customer $customer = null, $data = null): void
     {
         $accessToken = MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_TOKEN);
         $pixelId = MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_PIXEL_ID);
         $isActive = (bool)MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_ACTIVE);
         $testEventCode = MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_TEST_EVENT_CODE);
         $isTest = (bool)MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_TEST_MODE);
+
+        $request = $this->requestStack->getCurrentRequest();
+        $cookies = $request?->cookies;
 
         if (!$isActive || !$pixelId || !$accessToken){
             return;
@@ -56,16 +59,17 @@ class MetaListener implements EventSubscriberInterface
             $userData = (new MetaUserData())
                 ->setClientIpAddress($_SERVER['REMOTE_ADDR'])
                 ->setClientUserAgent($_SERVER['HTTP_USER_AGENT'])
+                ->setFbc($cookies?->get('_fbc'))
+                ->setFbp($cookies?->get('_fbp'))
             ;
 
-            if ($customer !== null) {
-                $userData = $this->service->getCustomerInfo($userData, $customer->getId());
-            }
+            $userData = $this->service->getCustomerInfo($userData, $customer);
 
             $event = (new MetaEvent())
+                ->setEventId($eventId)
                 ->setEventName($eventName)
                 ->setEventTime(time())
-                ->setEventSourceUrl($this->requestStack->getCurrentRequest()->getRequestUri())
+                ->setEventSourceUrl($request?->getRequestUri())
                 ->setUserData($userData)
                 ->setActionSource(MetaActionSource::WEBSITE)
             ;
