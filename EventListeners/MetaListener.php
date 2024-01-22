@@ -17,6 +17,8 @@ use Thelia\Core\Event\TheliaEvents;
 use Thelia\Log\Tlog;
 use Thelia\Model\Customer;
 use Thelia\Model\Order;
+use Thelia\Model\OrderStatus;
+use Thelia\Model\OrderStatusQuery;
 
 class MetaListener implements EventSubscriberInterface
 {
@@ -28,13 +30,16 @@ class MetaListener implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            TheliaEvents::ORDER_PAY => ['onOrderCreation', 50]
+            TheliaEvents::ORDER_UPDATE_STATUS => ['onOrderPay', 50]
         ];
     }
 
-    public function onOrderCreation(OrderEvent $event): void
+    public function onOrderPay(OrderEvent $event): void
     {
-        $this->sendData('Purchase',  $event->getPlacedOrder()->getRef(), $event->getPlacedOrder()->getCustomer(), $event->getPlacedOrder());
+        $orderStatusPay = OrderStatusQuery::create()->filterByCode(OrderStatus::CODE_PAID)->findOne();
+        if ((int)$event->getStatus() === $orderStatusPay?->getId()) {
+            $this->sendData('Purchase',  $event->getOrder()->getRef(), $event->getOrder()->getCustomer(), $event->getOrder());
+        }
     }
 
     protected function sendData($eventName, $eventId, ?Customer $customer = null, $data = null): void
@@ -61,6 +66,7 @@ class MetaListener implements EventSubscriberInterface
                 ->setClientUserAgent($_SERVER['HTTP_USER_AGENT'])
                 ->setFbc($cookies?->get('_fbc'))
                 ->setFbp($cookies?->get('_fbp'))
+                ->setFbLoginId(null)
             ;
 
             $userData = $this->service->getCustomerInfo($userData, $customer);
