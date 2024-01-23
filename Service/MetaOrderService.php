@@ -14,9 +14,9 @@ use Thelia\Model\OrderProductTaxQuery;
 
 class MetaOrderService
 {
-    public function getCustomerInfo(MetaUserData $userData, $customerId): MetaUserData
+    public function getCustomerInfo(MetaUserData $userData, $customer = null): MetaUserData
     {
-        if (null !== $customer = CustomerQuery::create()->findPk($customerId)) {
+        if (null !== $customer) {
             $customerAddress = $customer->getDefaultAddress();
 
             $userData
