@@ -6,7 +6,9 @@ use FacebookAds\Object\ServerSide\Content as MetaContent;
 use FacebookAds\Object\ServerSide\CustomData as MetaCustomData;
 use FacebookAds\Object\ServerSide\DeliveryCategory as MetaDeliveryCategory;
 use FacebookAds\Object\ServerSide\UserData as MetaUserData;
+use Thelia\Model\Base\Currency;
 use Thelia\Model\Base\ModuleQuery;
+use Thelia\Model\CartItem;
 use Thelia\Model\CustomerQuery;
 use Thelia\Model\Order;
 use Thelia\Model\OrderProduct;
@@ -33,7 +35,7 @@ class MetaOrderService
         return $userData;
     }
 
-    public function getCustomData(Order $order): MetaCustomData
+    public function getOrderData(Order $order): MetaCustomData
     {
         $contents = [];
         $orderTotalTaxedPrice = 0;
@@ -50,6 +52,24 @@ class MetaOrderService
             ->setContents($contents)
             ->setCurrency(strtolower($order->getCurrency()->getCode()))
             ->setValue($orderTotalTaxedPrice + $postage);
+    }
+
+    public function getAddItemData(CartItem $cartItem, Currency $currency): MetaCustomData
+    {
+        $product = $cartItem->getProduct();
+
+        $content = (new MetaContent())
+            ->setProductId($product->getRef())
+            ->setTitle($product->getTitle())
+            ->setDescription($product->getDescription())
+            ->setItemPrice($cartItem->getPrice())
+            ->setQuantity($cartItem->getQuantity())
+        ;
+
+        return (new MetaCustomData())
+            ->setContents([$content])
+            ->setCurrency(strtolower($currency->getCode()))
+            ->setValue($cartItem->getPrice() * $cartItem->getQuantity());
     }
 
     public function getContent(OrderProduct $orderProduct): MetaContent
