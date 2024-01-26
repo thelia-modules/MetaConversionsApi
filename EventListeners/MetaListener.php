@@ -10,8 +10,12 @@ use FacebookAds\Object\ServerSide\EventRequest as MetaEventRequest;
 use FacebookAds\Object\ServerSide\UserData as MetaUserData;
 use MetaConversionsApi\MetaConversionsApi;
 use MetaConversionsApi\Service\MetaOrderService;
+use OpenApi\Events\OpenApiEvents;
+use OpenApi\OpenApi;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Thelia\Core\Event\Cart\CartEvent;
+use Thelia\Core\Event\Customer\CustomerCreateOrUpdateEvent;
 use Thelia\Core\Event\Order\OrderEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Log\Tlog;
@@ -30,19 +34,54 @@ class MetaListener implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            TheliaEvents::ORDER_UPDATE_STATUS => ['onOrderPay', 50]
+            TheliaEvents::ORDER_UPDATE_STATUS => ['onOrderStatusUpdate', 50],
+            TheliaEvents::CART_ADDITEM => ['onCartAddItem', 50],
+            TheliaEvents::CUSTOMER_CREATEACCOUNT => ['onCustomerCreateAccount', 50],
+            TheliaEvents::ORDER_PAY => ['onOrderPay', 50],
+            TheliaEvents::ORDER_SET_DELIVERY_ADDRESS => ['onBeginCheckout', 50]
         ];
+    }
+
+    public function onBeginCheckout(OrderEvent $event): void
+    {
+        if(!$this->requestStack->getSession()->get('fb_begin_checkout')) {
+            $this->requestStack->getSession()->set('fb_begin_checkout', 1);
+            $this->sendData( 'InitiateCheckout');
+        }
     }
 
     public function onOrderPay(OrderEvent $event): void
     {
+        $this->requestStack->getSession()->set('fb_begin_checkout', null);
+    }
+    public function onCustomerCreateAccount(CustomerCreateOrUpdateEvent $event): void
+    {
+        $this->sendData( 'CompleteRegistration');
+    }
+    public function onCartAddItem(CartEvent $event): void
+    {
+        $this->sendData(
+            'AddToCart',
+            null,
+            null,
+            $this->service->getAddItemData($event->getCartItem(), $event->getCart()->getCurrency())
+        );
+    }
+
+    public function onOrderStatusUpdate(OrderEvent $event): void
+    {
         $orderStatusPay = OrderStatusQuery::create()->filterByCode(OrderStatus::CODE_PAID)->findOne();
         if ((int)$event->getStatus() === $orderStatusPay?->getId()) {
-            $this->sendData('Purchase',  $event->getOrder()->getRef(), $event->getOrder()->getCustomer(), $event->getOrder());
+            $this->sendData(
+                'Purchase',
+                $event->getOrder()->getRef(),
+                $event->getOrder()->getCustomer(),
+                $this->service->getOrderData($event->getOrder())
+            );
         }
     }
 
-    protected function sendData($eventName, $eventId, ?Customer $customer = null, $data = null): void
+    protected function sendData($eventName, $eventId = null, ?Customer $customer = null, $data = null): void
     {
         $accessToken = MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_TOKEN);
         $pixelId = MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_PIXEL_ID);
@@ -55,6 +94,10 @@ class MetaListener implements EventSubscriberInterface
 
         if (!$isActive || !$pixelId || !$accessToken){
             return;
+        }
+
+        if (null === $customer) {
+            $customer = $this->requestStack->getSession()->get('thelia.customer_user');
         }
 
         try {
@@ -80,8 +123,8 @@ class MetaListener implements EventSubscriberInterface
                 ->setActionSource(MetaActionSource::WEBSITE)
             ;
 
-            if ($data !== null && $eventName === "Purchase") {
-                $event->setCustomData($this->service->getCustomData($data));
+            if ($data !== null) {
+                $event->setCustomData($data);
             }
 
             $request = (new MetaEventRequest($pixelId))->setEvents([$event]);
