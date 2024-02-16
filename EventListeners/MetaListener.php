@@ -88,11 +88,12 @@ class MetaListener implements EventSubscriberInterface
         $isActive = (bool)MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_ACTIVE);
         $testEventCode = MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_TEST_EVENT_CODE);
         $isTest = (bool)MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_TEST_MODE);
+        $metaConversionEnv = $_ENV['META_CONVERSION_ENV'];
 
         $request = $this->requestStack->getCurrentRequest();
         $cookies = $request?->cookies;
 
-        if (!$isActive || !$pixelId || !$accessToken){
+        if (!$isActive || !$pixelId || !$accessToken || $metaConversionEnv !== 'prod'){
             return;
         }
 
