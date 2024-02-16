@@ -9,7 +9,9 @@ class ConfigurationHook extends BaseHook
 {
     public function onModuleConfiguration(HookRenderEvent $event): void
     {
-        $event->add($this->render("module_configuration.html"));
+        $event->add($this->render("module_configuration.html", [
+            'meta_conversion_env' => $_ENV['META_CONVERSION_ENV']
+        ]));
     }
 
     public static function getSubscribedHooks(): array

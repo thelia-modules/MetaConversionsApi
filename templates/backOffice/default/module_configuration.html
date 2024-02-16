@@ -15,6 +15,12 @@
                             <div class="title">
                                 {intl l="Meta Conversions Api configuration" d='metaconversionsapi.bo.default'}
                             </div>
+                            {if $meta_conversion_env !== 'prod'}
+                                <div class="alert alert-danger">
+                                    {intl l='Le module et en mode preprod, aucune requête ne sera envoyée à facebook.' }
+                                    {intl l='Si vous êtes en prod, veillez rajouter <b>META_CONVERSION_ENV=prod</b> dans le fichier <b>.env.local</b>'}
+                                </div>
+                            {/if}
 
                             {form name="metaconversionsapi_form_configuration_form"}
                                 <form method="POST" action="{url path="/admin/module/MetaConversionsApi/configuration"}" {form_enctype} >
