@@ -56,6 +56,14 @@ class ConfigurationForm extends BaseForm
                     'label' => Translator::getInstance()->trans('Test Mode ?', [], MetaConversionsApi::DOMAIN_NAME),
                     'data' => (bool)MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_TEST_MODE)
                 ]
+            )
+            ->add(
+                'track_personal_data',
+                CheckboxType::class, [
+                    'required' => false,
+                    'label' => Translator::getInstance()->trans('Traquer les données personnels des utilisateurs', [], MetaConversionsApi::DOMAIN_NAME),
+                    'data' => (bool)MetaConversionsApi::getConfigValue(MetaConversionsApi::META_TRACKER_TRACK_PERSONAL_DATA)
+                ]
             );
     }
 }

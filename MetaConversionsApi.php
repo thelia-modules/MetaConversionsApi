@@ -18,6 +18,7 @@ class MetaConversionsApi extends BaseModule
     public const META_TRACKER_ACTIVE = 'meta_tracker_active';
     public const META_TRACKER_TEST_EVENT_CODE = 'meta_tracker_test_event_code';
     public const META_TRACKER_TEST_MODE = 'meta_tracker_test_mode';
+    public const META_TRACKER_TRACK_PERSONAL_DATA = 'track_personal_data';
 
     /*
      * You may now override BaseModuleInterface methods, such as:
