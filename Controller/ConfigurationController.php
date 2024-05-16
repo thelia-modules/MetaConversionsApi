@@ -27,6 +27,7 @@ class ConfigurationController extends AdminController
             MetaConversionsApi::setConfigValue(MetaConversionsApi::META_TRACKER_ACTIVE, $data["tracker_active"]);
             MetaConversionsApi::setConfigValue(MetaConversionsApi::META_TRACKER_TEST_EVENT_CODE, $data["tracker_test_event_code"]);
             MetaConversionsApi::setConfigValue(MetaConversionsApi::META_TRACKER_TEST_MODE, $data["tracker_test_mode"]);
+            MetaConversionsApi::setConfigValue(MetaConversionsApi::META_TRACKER_TRACK_PERSONAL_DATA, $data["track_personal_data"]);
 
 
             return $this->generateSuccessRedirect($form);
