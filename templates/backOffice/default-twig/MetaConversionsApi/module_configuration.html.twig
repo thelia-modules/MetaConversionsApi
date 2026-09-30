@@ -1,0 +1,50 @@
+{# MetaConversionsApi — back-office configuration fragment (hook: module.configuration) #}
+{# Error messages are shown by the back-office layout (bo_flashes()). #}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="card-title mb-0">
+            {{ 'Meta Conversions Api configuration'|trans({}, 'metaconversionsapi.bo.default') }}
+        </h4>
+    </div>
+
+    <div class="card-body">
+        {% if not is_production_environment %}
+            <div class="alert alert-warning">
+                {{ 'Nothing is sent to Meta: the environment variable META_CONVERSION_ENV is not set to "prod".'|trans({}, 'metaconversionsapi.bo.default') }}
+            </div>
+        {% endif %}
+
+        {% form_theme form with bo_form_themes only %}
+        {{ form_start(form, {action: path('meta_conversions_api.configuration'), method: 'POST'}) }}
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5>{{ 'Meta pixel'|trans({}, 'metaconversionsapi.bo.default') }}</h5>
+                {{ form_row(form.tracker_pixel_id) }}
+                {{ form_row(form.tracker_token) }}
+                {{ form_row(form.tracker_active) }}
+                {{ form_row(form.track_personal_data) }}
+            </div>
+
+            <div class="col-md-6">
+                <h5>{{ 'Consent'|trans({}, 'metaconversionsapi.bo.default') }}</h5>
+                {{ form_row(form.consent_required) }}
+                {{ form_row(form.consent_vendor) }}
+                {{ form_row(form.snapshot_retention_days) }}
+
+                <h5 class="mt-4">{{ 'Test'|trans({}, 'metaconversionsapi.bo.default') }}</h5>
+                {{ form_row(form.tracker_test_event_code) }}
+                {{ form_row(form.tracker_test_mode) }}
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-save"></i>
+                {{ 'Save Configuration'|trans({}, 'metaconversionsapi.bo.default') }}
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>

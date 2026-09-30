@@ -1,17 +1,23 @@
 {
   "name": "thelia/meta-conversions-api-module",
-  "description": "MetaConversionsApi module for Thelia",
+  "description": "Sends the conversions of a Thelia shop to the Meta Conversions API",
   "license": "LGPL-3.0-or-later",
   "type": "thelia-module",
   "require": {
-    "thelia/installer": "~1.1",
-    "facebook/php-business-sdk": "^18.0"
-  }
-  ,
+    "php": ">=8.3",
+    "thelia/installer": "^1.6",
+    "symfony/http-client": "^7.4 || ^8.0"
+  },
   "require-dev": {
-    "roave/security-advisories": "dev-latest"
+    "roave/security-advisories": "dev-latest",
+    "phpunit/phpunit": "^11.5"
   },
   "extra": {
     "installer-name": "MetaConversionsApi"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "MetaConversionsApi\\Tests\\": "Tests/"
+    }
   }
 }
