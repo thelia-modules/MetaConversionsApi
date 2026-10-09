@@ -87,6 +87,16 @@ final readonly class VisitorSnapshotStore
             ->delete();
     }
 
+    /**
+     * How many snapshots {@see purgeOlderThan()} would delete, without deleting any.
+     */
+    public function countOlderThan(int $days): int
+    {
+        return $this->query()
+            ->filterByUpdatedAt(new \DateTimeImmutable(\sprintf('-%d days', max(0, $days))), Criteria::LESS_THAN)
+            ->count();
+    }
+
     private function query(): MetaDataQuery
     {
         return MetaDataQuery::create()
