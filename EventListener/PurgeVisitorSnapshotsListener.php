@@ -21,7 +21,8 @@ use Thelia\Core\Event\Maintenance\MaintenancePurgeEvent;
 use Thelia\Core\Event\TheliaEvents;
 
 /**
- * `thelia maintenance:purge` deletes the visitor details of the orders never paid within the retention period.
+ * `thelia maintenance:purge` deletes the visitor details of the orders never paid within the retention period; with
+ * `--dry-run` it only counts them.
  */
 final readonly class PurgeVisitorSnapshotsListener implements EventSubscriberInterface
 {
@@ -41,11 +42,13 @@ final readonly class PurgeVisitorSnapshotsListener implements EventSubscriberInt
     public function onMaintenancePurge(MaintenancePurgeEvent $event): void
     {
         $days = $this->settings->snapshotRetentionDays();
+        $dryRun = $event->isDryRun();
 
         $event->addResult(\sprintf(
-            '<comment>Meta Conversions API visitor details (>%d days):</comment> <info>%d deleted</info>',
+            '<comment>Meta Conversions API visitor details (>%d days):</comment> <info>%d %s</info>',
             $days,
-            $this->snapshotStore->purgeOlderThan($days),
+            $dryRun ? $this->snapshotStore->countOlderThan($days) : $this->snapshotStore->purgeOlderThan($days),
+            $dryRun ? 'to delete' : 'deleted',
         ));
     }
 }

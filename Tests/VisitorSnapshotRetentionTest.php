@@ -90,6 +90,26 @@ final class VisitorSnapshotRetentionTest extends ConversionTestCase
         self::assertStringContainsString('1 deleted', implode("\n", $event->getResults()));
     }
 
+    public function testTheMaintenancePurgeDryRunCountsTheSnapshotsAndDeletesNothing(): void
+    {
+        MetaConversionsApi::setConfigValue(MetaConversionsApi::META_TRACKER_SNAPSHOT_RETENTION_DAYS, '30');
+        $store = new VisitorSnapshotStore();
+        $oldOrder = $this->orderWithTwoProducts();
+        $recentOrder = $this->orderWithTwoProducts();
+        $store->save((int) $oldOrder->getId(), $this->snapshot());
+        $store->save((int) $recentOrder->getId(), $this->snapshot());
+        $this->getPropelConnection()
+            ->prepare('UPDATE meta_data SET updated_at = DATE_SUB(NOW(), INTERVAL 31 DAY) WHERE meta_key = :key AND element_id = :id')
+            ->execute([':key' => VisitorSnapshotStore::META_KEY, ':id' => $oldOrder->getId()]);
+
+        $event = new MaintenancePurgeEvent(true);
+        (new PurgeVisitorSnapshotsListener($store, new Settings()))->onMaintenancePurge($event);
+
+        self::assertNotNull($store->find((int) $oldOrder->getId()), 'A dry run writes nothing.');
+        self::assertNotNull($store->find((int) $recentOrder->getId()));
+        self::assertStringContainsString('1 to delete', implode("\n", $event->getResults()));
+    }
+
     private function snapshot(): VisitorSnapshot
     {
         return VisitorSnapshot::fromRequest($this->visitorRequest(path: '/order/pay'));
